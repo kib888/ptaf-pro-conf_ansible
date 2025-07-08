@@ -1,0 +1,172 @@
+- hosts: ptaf-vm1
+  name: Execute commands on node ptaf-vm1
+  tasks:
+  - name: 'Run command: wsc -c "dhcp set routers false"'
+    shell: wsc -c "dhcp set routers false"
+  - name: 'Run command: wsc -c "if set eth0 inet_method static inet_address 192.168.0.171
+      inet_netmask 255.255.255.0 inet_gateway 192.168.0.1"'
+    shell: wsc -c "if set eth0 inet_method static inet_address 192.168.0.171 inet_netmask
+      255.255.255.0 inet_gateway 192.168.0.1"
+  - name: 'Run command: wsc -c "if set eth1 inet_method static inet_address 172.16.10.10
+      inet_netmask 255.255.255.248"'
+    shell: wsc -c "if set eth1 inet_method static inet_address 172.16.10.10 inet_netmask
+      255.255.255.248"
+  - name: 'Run command: wsc -c "if set eth1 role CLUSTER"'
+    shell: wsc -c "if set eth1 role CLUSTER"
+  - name: 'Run command: wsc -c "if set eth0 role WAN"'
+    shell: wsc -c "if set eth0 role WAN"
+  - name: 'Run command: wsc -c "if set eth0 role LAN"'
+    shell: wsc -c "if set eth0 role LAN"
+  - name: 'Run command: hostnamectl set-hostname ptaf-vm1'
+    shell: hostnamectl set-hostname ptaf-vm1
+  - name: 'Run command: echo "127.0.1.1 ptaf-vm1" >> /etc/hosts'
+    shell: echo "127.0.1.1 ptaf-vm1" >> /etc/hosts
+  - name: 'Run command: echo "172.16.10.13 ptaf-vm4" >> /etc/hosts'
+    shell: echo "172.16.10.13 ptaf-vm4" >> /etc/hosts
+  - name: 'Run command: echo "172.16.10.12 ptaf-vm3" >> /etc/hosts'
+    shell: echo "172.16.10.12 ptaf-vm3" >> /etc/hosts
+  - name: 'Run command: echo "172.16.10.11 ptaf-vm2" >> /etc/hosts'
+    shell: echo "172.16.10.11 ptaf-vm2" >> /etc/hosts
+  - name: 'Run command: echo "172.16.10.10 ptaf-vm1" >> /etc/hosts'
+    shell: echo "172.16.10.10 ptaf-vm1" >> /etc/hosts
+  - name: 'Run command: wsc -c "inventory node add ptaf-vm1"'
+    shell: wsc -c "inventory node add ptaf-vm1"
+  - name: 'Run command: wsc -c ''inventory node set ptaf-vm1 cluster_ip 172.16.10.10
+      role master,worker-backend,postgresql,rabbitmq,minio,clickhouse port 22013 user_name
+      pt user_password admin@123 sudo_password admin@123'''
+    shell: wsc -c 'inventory node set ptaf-vm1 cluster_ip 172.16.10.10 role master,worker-backend,postgresql,rabbitmq,minio,clickhouse
+      port 22013 user_name pt user_password admin@123 sudo_password admin@123'
+  - name: 'Run command: wsc -c "inventory node add ptaf-vm2"'
+    shell: wsc -c "inventory node add ptaf-vm2"
+  - name: 'Run command: wsc -c ''inventory node set ptaf-vm2 cluster_ip 172.16.10.11
+      role master,worker-backend,postgresql,rabbitmq,minio,clickhouse port 22013 user_name
+      pt user_password admin@124 sudo_password admin@124'''
+    shell: wsc -c 'inventory node set ptaf-vm2 cluster_ip 172.16.10.11 role master,worker-backend,postgresql,rabbitmq,minio,clickhouse
+      port 22013 user_name pt user_password admin@124 sudo_password admin@124'
+  - name: 'Run command: wsc -c "inventory node add ptaf-vm3"'
+    shell: wsc -c "inventory node add ptaf-vm3"
+  - name: 'Run command: wsc -c ''inventory node set ptaf-vm3 cluster_ip 172.16.10.12
+      role master,worker-backend,postgresql,rabbitmq,minio port 22013 user_name pt
+      user_password admin@125 sudo_password admin@125'''
+    shell: wsc -c 'inventory node set ptaf-vm3 cluster_ip 172.16.10.12 role master,worker-backend,postgresql,rabbitmq,minio
+      port 22013 user_name pt user_password admin@125 sudo_password admin@125'
+  - name: 'Run command: wsc -c "inventory node add ptaf-vm4"'
+    shell: wsc -c "inventory node add ptaf-vm4"
+  - name: 'Run command: wsc -c ''inventory node set ptaf-vm4 cluster_ip 172.16.10.13
+      role worker-traffic port 22013 user_name pt user_password admin@125 sudo_password
+      admin@125'''
+    shell: wsc -c 'inventory node set ptaf-vm4 cluster_ip 172.16.10.13 role worker-traffic
+      port 22013 user_name pt user_password admin@125 sudo_password admin@125'
+- hosts: ptaf-vm2
+  name: Execute commands on node ptaf-vm2
+  tasks:
+  - name: 'Run command: wsc -c "dhcp set routers false"'
+    shell: wsc -c "dhcp set routers false"
+  - name: 'Run command: wsc -c "if set eth0 inet_method static inet_address 192.168.0.172
+      inet_netmask 255.255.255.0 inet_gateway 192.168.0.1"'
+    shell: wsc -c "if set eth0 inet_method static inet_address 192.168.0.172 inet_netmask
+      255.255.255.0 inet_gateway 192.168.0.1"
+  - name: 'Run command: wsc -c "if set eth1 inet_method static inet_address 172.16.10.11
+      inet_netmask 255.255.255.248"'
+    shell: wsc -c "if set eth1 inet_method static inet_address 172.16.10.11 inet_netmask
+      255.255.255.248"
+  - name: 'Run command: wsc -c "if set eth1 role CLUSTER"'
+    shell: wsc -c "if set eth1 role CLUSTER"
+  - name: 'Run command: wsc -c "if set eth0 role WAN"'
+    shell: wsc -c "if set eth0 role WAN"
+  - name: 'Run command: wsc -c "if set eth0 role LAN"'
+    shell: wsc -c "if set eth0 role LAN"
+  - name: 'Run command: hostnamectl set-hostname ptaf-vm2'
+    shell: hostnamectl set-hostname ptaf-vm2
+  - name: 'Run command: echo "127.0.1.1 ptaf-vm2" >> /etc/hosts'
+    shell: echo "127.0.1.1 ptaf-vm2" >> /etc/hosts
+  - name: 'Run command: echo "172.16.10.11 ptaf-vm2" >> /etc/hosts'
+    shell: echo "172.16.10.11 ptaf-vm2" >> /etc/hosts
+- hosts: ptaf-vm3
+  name: Execute commands on node ptaf-vm3
+  tasks:
+  - name: 'Run command: wsc -c "dhcp set routers false"'
+    shell: wsc -c "dhcp set routers false"
+  - name: 'Run command: wsc -c "if set eth0 inet_method static inet_address 192.168.0.173
+      inet_netmask 255.255.255.0 inet_gateway 192.168.0.1"'
+    shell: wsc -c "if set eth0 inet_method static inet_address 192.168.0.173 inet_netmask
+      255.255.255.0 inet_gateway 192.168.0.1"
+  - name: 'Run command: wsc -c "if set eth1 inet_method static inet_address 172.16.10.12
+      inet_netmask 255.255.255.248"'
+    shell: wsc -c "if set eth1 inet_method static inet_address 172.16.10.12 inet_netmask
+      255.255.255.248"
+  - name: 'Run command: wsc -c "if set eth1 role CLUSTER"'
+    shell: wsc -c "if set eth1 role CLUSTER"
+  - name: 'Run command: wsc -c "if set eth0 role WAN"'
+    shell: wsc -c "if set eth0 role WAN"
+  - name: 'Run command: wsc -c "if set eth0 role LAN"'
+    shell: wsc -c "if set eth0 role LAN"
+  - name: 'Run command: hostnamectl set-hostname ptaf-vm3'
+    shell: hostnamectl set-hostname ptaf-vm3
+  - name: 'Run command: echo "127.0.1.1 ptaf-vm3" >> /etc/hosts'
+    shell: echo "127.0.1.1 ptaf-vm3" >> /etc/hosts
+  - name: 'Run command: echo "172.16.10.12 ptaf-vm3" >> /etc/hosts'
+    shell: echo "172.16.10.12 ptaf-vm3" >> /etc/hosts
+- hosts: ptaf-vm4
+  name: Execute commands on node ptaf-vm4
+  tasks:
+  - name: 'Run command: wsc -c "dhcp set routers false"'
+    shell: wsc -c "dhcp set routers false"
+  - name: 'Run command: wsc -c "if set eth0 inet_method static inet_address 192.168.0.174
+      inet_netmask 255.255.255.0 inet_gateway 192.168.0.1"'
+    shell: wsc -c "if set eth0 inet_method static inet_address 192.168.0.174 inet_netmask
+      255.255.255.0 inet_gateway 192.168.0.1"
+  - name: 'Run command: wsc -c "if set eth1 inet_method static inet_address 172.16.10.13
+      inet_netmask 255.255.255.248"'
+    shell: wsc -c "if set eth1 inet_method static inet_address 172.16.10.13 inet_netmask
+      255.255.255.248"
+  - name: 'Run command: wsc -c "if set eth1 role CLUSTER"'
+    shell: wsc -c "if set eth1 role CLUSTER"
+  - name: 'Run command: wsc -c "if set eth2 inet_method static inet_address 10.10.10.10
+      inet_netmask 255.255.255.0"'
+    shell: wsc -c "if set eth2 inet_method static inet_address 10.10.10.10 inet_netmask
+      255.255.255.0"
+  - name: 'Run command: wsc -c "if set eth2 role WAN"'
+    shell: wsc -c "if set eth2 role WAN"
+  - name: 'Run command: wsc -c "if set eth2 role LAN"'
+    shell: wsc -c "if set eth2 role LAN"
+  - name: 'Run command: hostnamectl set-hostname ptaf-vm4'
+    shell: hostnamectl set-hostname ptaf-vm4
+  - name: 'Run command: echo "127.0.1.1 ptaf-vm4" >> /etc/hosts'
+    shell: echo "127.0.1.1 ptaf-vm4" >> /etc/hosts
+  - name: 'Run command: echo "172.16.10.13 ptaf-vm4" >> /etc/hosts'
+    shell: echo "172.16.10.13 ptaf-vm4" >> /etc/hosts
+- hosts: all
+  name: Execute commands on nodes
+  tasks:
+  - name: 'Run command: wsc -c "vip set monitoring 192.168.0.171"'
+    shell: wsc -c "vip set monitoring 192.168.0.171"
+  - name: 'Run command: wsc -c "vip set manage 192.168.0.171"'
+    shell: wsc -c "vip set manage 192.168.0.171"
+  - name: 'Run command: wsc -c "vip set border 192.168.0.171"'
+    shell: wsc -c "vip set border 192.168.0.171"
+  - name: 'Run command: wsc -c "dhcp set ntp_servers false"'
+    shell: wsc -c "dhcp set ntp_servers false"
+  - name: 'Run command: wsc -c "ntp add time.google.com"'
+    shell: wsc -c "ntp add time.google.com"
+  - name: 'Run command: echo "nameserver 8.8.8.8" >> /etc/resolv.conf'
+    shell: echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+  - name: 'Run command: wsc -c "timezone Asia/Dubai"'
+    shell: wsc -c "timezone Asia/Dubai"
+  - name: Commit configuration changes
+    shell: wsc -c "config commit"
+- name: Check inventory and node list on ptaf-vm1
+  hosts: ptaf-vm1
+  tasks:
+  - name: 'Run command: wsc -c ''inventory check'''
+    shell: wsc -c "inventory check"
+    register: result
+  - name: Show status inventory check
+    debug:
+      var: result
+  - name: 'Run command: wsc -c ''inventory node list'''
+    shell: wsc -c "inventory node list"
+    register: result
+  - name: Show status inventory node list
+    debug:
+      var: result
