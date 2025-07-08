@@ -1,4 +1,4 @@
-__version__ = "2.2"
+__version__ = "2.3"
 
 import sys
 if sys.version_info < (3, 10, 5):
@@ -230,30 +230,8 @@ def create_config(df):
             # for ethui in eth_arrays:
             #     cmd.append(ethui)   # Добавляем текущий список в cmd
             #     #tasks.append(ethui)
-            #Ищем роль LAN на воркер или base-worker ноде, а если LAN нет, то добавляем роль LAN к интерфейсу с ролью WAN
-            if af_nodes[i].node_role == 'worker' or af_nodes[i].node_role == 'base-worker':
-                lan_found = False
-                wan_object_name = None
-
-                # Проверяем все eth интерфейсы на ноде
-                for j in range(4):
-                    role_key = f"eth{j}_role"
-                    name_key = f"eth{j}_name"
-
-                    role_value = getattr(af_nodes[i], role_key, None)  # Получаем значение атрибута role
-                    name_value = getattr(af_nodes[i], name_key, None)  # Получаем значение атрибута name
-
-                    if role_value == "LAN":
-                        lan_found = True
-                        break
-                    elif role_value == "WAN" and wan_object_name is None:
-                        wan_object_name = name_value
-
-                # Если LAN не найден, добавляем её к интерфейсу с ролью WAN
-                if not lan_found and wan_object_name:
-                    cmd.append('wsc -c "if set ' + wan_object_name + ' role LAN' '"')
-                    tasks.append('wsc -c "if set ' + wan_object_name + ' role LAN' '"')
-            else:
+            #Ищем роль и ван и LAN на воркер или base-worker или на base ноде, а если LAN нет, то добавляем роль LAN к интерфейсу с ролью WAN
+            if af_nodes[i].node_role == 'worker' or af_nodes[i].node_role == 'base-worker' or af_nodes[i].node_role == 'base':
                 wan_found = False
                 lan_object_name = None
                 mgmt_object_name = None
@@ -299,6 +277,8 @@ def create_config(df):
             cmd.append('hostnamectl set-hostname ' + af_nodes[i].hostname)
             tasks.append('hostnamectl set-hostname ' + af_nodes[i].hostname)
             if i != 0:
+                cmd.append('echo "127.0.1.1 ' + af_nodes[i].hostname + '" >> /etc/hosts')
+                tasks.append('echo "127.0.1.1 ' + af_nodes[i].hostname + '" >> /etc/hosts')
                 cmd.append('echo "'+ cluster_ip + " " + af_nodes[i].hostname + '" >> /etc/hosts')
                 tasks.append('echo "'+ cluster_ip + " " + af_nodes[i].hostname + '" >> /etc/hosts')
             cmd.append('# задаем Timezone')
@@ -332,6 +312,8 @@ def create_config(df):
                 cmd.append('exit')
             if(i == 0):
                 if (len(hstn) >= 1):
+                    cmd.append('echo "127.0.1.1 ' + af_nodes[i].hostname + '" >> /etc/hosts')
+                    tasks.append('echo "127.0.1.1 ' + af_nodes[i].hostname + '" >> /etc/hosts')
                     cmd += hstn
                     tasks += hstn
                 cmd.append('\n\n# настройка роли узла(ов)')
@@ -672,4 +654,10 @@ if __name__ == "__main__":
     # Вызов sys.exit() закрывает сессию интерпретатора
     # нужен import sys
     # sys.exit(main())
-    main()
+    try:
+        main()
+    except Exception as e:
+        print("Произошла ошибка:", e)
+    finally:
+        input("Нажмите Enter для выхода...")  
+    
