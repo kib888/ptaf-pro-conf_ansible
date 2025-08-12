@@ -35,7 +35,7 @@ def dns(df):
     cmd = []
     cmd.append("# Настройка DNS")
     if (df.iloc[31]['node1'] != ""):
-        cmd.append('echo "nameserver ' + df.iloc[31]['node1'] + '" >> /etc/resolv.conf')
+        cmd.append('echo "nameserver ' + df.iloc[31]['node1'] + '" > /etc/resolv.conf')
         if (df.iloc[31]['node2'] != ""):
             cmd.append('echo "nameserver ' + df.iloc[31]['node2'] + '" >> /etc/resolv.conf')
             if (df.iloc[31]['node3'] != ""):
@@ -277,6 +277,8 @@ def create_config(df):
             cmd.append('hostnamectl set-hostname ' + af_nodes[i].hostname)
             tasks.append('hostnamectl set-hostname ' + af_nodes[i].hostname)
             if i != 0:
+                cmd.append('echo "127.0.0.1 localhost" > /etc/hosts')
+                tasks.append('echo "127.0.0.1 localhost" > /etc/hosts')
                 cmd.append('echo "127.0.1.1 ' + af_nodes[i].hostname + '" >> /etc/hosts')
                 tasks.append('echo "127.0.1.1 ' + af_nodes[i].hostname + '" >> /etc/hosts')
                 cmd.append('echo "'+ cluster_ip + " " + af_nodes[i].hostname + '" >> /etc/hosts')
@@ -312,6 +314,8 @@ def create_config(df):
                 cmd.append('exit')
             if(i == 0):
                 if (len(hstn) >= 1):
+                    cmd.append('echo "127.0.0.1 localhost" > /etc/hosts')
+                    tasks.append('echo "127.0.0.1 localhost" > /etc/hosts')
                     cmd.append('echo "127.0.1.1 ' + af_nodes[i].hostname + '" >> /etc/hosts')
                     tasks.append('echo "127.0.1.1 ' + af_nodes[i].hostname + '" >> /etc/hosts')
                     cmd += hstn
@@ -349,7 +353,8 @@ def create_config(df):
         playbook_path = 'playbook.yaml'
         with open(playbook_path, 'r', encoding='utf-8') as f:
             playbook = yaml.safe_load(f) or []
-        all_commands = []
+        all_commands = []        
+        all_commands.append('rm /opt/ptaf/conf/wsc/config.sqlite3') # Удаляем базу wsc на каждой ноде
         filtered_commands = [task for task in tasks if not task.strip().startswith("#")]
         all_commands.extend(filtered_commands)
 
@@ -511,7 +516,6 @@ def generate_commands_playbook(output_file="playbook.yaml", *functions):
     """
     # Список для всех команд
     all_commands = []
-
     # Вызываем каждую функцию и добавляем её команды в общий список
     for func in functions:
         commands = func()
