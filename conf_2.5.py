@@ -1,10 +1,12 @@
-__version__ = "2.4"
+__version__ = "2.5"
 
 import sys
 if sys.version_info < (3, 10, 5):
     print('Please upgrade your Python version to 3.10.4 or higher')
     sys.exit()
 import argparse
+from dataclasses import dataclass
+import traceback
 # pip3 install ipcalc
 import ipcalc
 
@@ -107,41 +109,97 @@ def get_af_nodes(df):
                               eth3_gw=str(df.iloc[24]["node" + str(x)]),
                               eth3_role=str(df.iloc[25]["node" + str(x)]),
                               eth3_mode=str(df.iloc[26]["node" + str(x)]),
-                              node_dgw=str(df.iloc[27]["node" + str(x)])))
+                              node_dgw=str(df.iloc[27]["node" + str(x)]),
+                              bond0_int1=str(df.iloc[38]["node" + str(x)]), 
+                              bond0_int2=str(df.iloc[39]["node" + str(x)]), 
+                              bond0_mode=str(df.iloc[40]["node" + str(x)]), 
+                              bond0_tag1=str(df.iloc[41]["node" + str(x)]), 
+                              bond0_tag2=str(df.iloc[42]["node" + str(x)]), 
+                              bond0_tag3=str(df.iloc[43]["node" + str(x)]), 
+                              bond0_tag4=str(df.iloc[44]["node" + str(x)]), 
+                              bond1_int1=str(df.iloc[45]["node" + str(x)]), 
+                              bond1_int2=str(df.iloc[46]["node" + str(x)]), 
+                              bond1_mode=str(df.iloc[47]["node" + str(x)]), 
+                              bond1_tag1=str(df.iloc[48]["node" + str(x)]), 
+                              bond1_tag2=str(df.iloc[49]["node" + str(x)]), 
+                              bond1_tag3=str(df.iloc[50]["node" + str(x)]), 
+                              bond1_tag4=str(df.iloc[51]["node" + str(x)]), 
+                              bond2_int1=str(df.iloc[52]["node" + str(x)]), 
+                              bond2_int2=str(df.iloc[53]["node" + str(x)]), 
+                              bond2_mode=str(df.iloc[54]["node" + str(x)]), 
+                              bond2_tag1=str(df.iloc[55]["node" + str(x)]), 
+                              bond2_tag2=str(df.iloc[56]["node" + str(x)]), 
+                              bond2_tag3=str(df.iloc[57]["node" + str(x)]), 
+                              bond2_tag4=str(df.iloc[58]["node" + str(x)]), 
+                              bond3_int1=str(df.iloc[59]["node" + str(x)]), 
+                              bond3_int2=str(df.iloc[60]["node" + str(x)]), 
+                              bond3_mode=str(df.iloc[61]["node" + str(x)]), 
+                              bond3_tag1=str(df.iloc[62]["node" + str(x)]), 
+                              bond3_tag2=str(df.iloc[63]["node" + str(x)]), 
+                              bond3_tag3=str(df.iloc[64]["node" + str(x)]), 
+                              bond3_tag4=str(df.iloc[65]["node" + str(x)])))
 
+@dataclass
 class AF_nodes:
-    #
-    # узел AF
-    #
-    def __init__(self, node_role, hostname, ssh_password, node_dgw, eth0_name, eth1_name, eth2_name, eth3_name,  eth0_ip, eth0_netmask, eth0_gw, eth0_role, eth0_mode, eth1_ip, eth1_netmask, eth1_gw, eth1_role, eth1_mode, eth2_ip, eth2_netmask, eth2_gw, eth2_role, eth2_mode, eth3_ip, eth3_netmask, eth3_gw, eth3_role, eth3_mode):
-        self.node_role = node_role
-        self.hostname = hostname
-        self.ssh_password = ssh_password
-        self.eth0_ip = eth0_ip
-        self.eth0_netmask = eth0_netmask
-        self.eth0_gw = eth0_gw
-        self.eth0_role = eth0_role
-        self.eth0_mode = eth0_mode
-        self.eth1_ip = eth1_ip
-        self.eth1_netmask = eth1_netmask
-        self.eth1_gw = eth1_gw
-        self.eth1_role = eth1_role
-        self.eth1_mode = eth1_mode
-        self.eth2_ip = eth2_ip
-        self.eth2_netmask = eth2_netmask
-        self.eth2_gw = eth2_gw
-        self.eth2_role = eth2_role
-        self.eth2_mode = eth2_mode
-        self.eth3_ip = eth3_ip
-        self.eth3_netmask = eth3_netmask
-        self.eth3_gw = eth3_gw
-        self.eth3_role = eth3_role
-        self.eth3_mode = eth3_mode
-        self.eth0_name = eth0_name
-        self.eth1_name = eth1_name
-        self.eth2_name = eth2_name
-        self.eth3_name = eth3_name
-        self.node_dgw = node_dgw
+    """Узел AF"""
+    node_role: str
+    hostname: str
+    ssh_password: str
+    node_dgw: str
+    eth0_name: str
+    eth1_name: str
+    eth2_name: str
+    eth3_name: str
+    eth0_ip: str
+    eth0_netmask: str
+    eth0_gw: str
+    eth0_role: str
+    eth0_mode: str
+    eth1_ip: str
+    eth1_netmask: str
+    eth1_gw: str
+    eth1_role: str
+    eth1_mode: str
+    eth2_ip: str
+    eth2_netmask: str
+    eth2_gw: str
+    eth2_role: str
+    eth2_mode: str
+    eth3_ip: str
+    eth3_netmask: str
+    eth3_gw: str
+    eth3_role: str
+    eth3_mode: str
+    bond0_int1: str
+    bond0_int2: str
+    bond0_mode: str
+    bond0_tag1: str
+    bond0_tag2: str
+    bond0_tag3: str
+    bond0_tag4: str
+    bond1_int1: str
+    bond1_int2: str
+    bond1_mode: str
+    bond1_tag1: str
+    bond1_tag2: str
+    bond1_tag3: str
+    bond1_tag4: str
+    bond2_int1: str
+    bond2_int2: str
+    bond2_mode: str
+    bond2_tag1: str
+    bond2_tag2: str
+    bond2_tag3: str
+    bond2_tag4: str
+    bond3_int1: str
+    bond3_int2: str
+    bond3_mode: str
+    bond3_tag1: str
+    bond3_tag2: str
+    bond3_tag3: str
+    bond3_tag4: str
+
+
 
 def get_ip(node: AF_nodes, eth_role):
     #
@@ -194,6 +252,23 @@ def create_config(df):
             #              cluster_ip + ' -p 22013 bash -c \'echo ' + af_nodes[i].ssh_password + ' | sudo -S sh << EOF\n' + \
             #              af_nodes[i].ssh_password + '\n'
             #    cmd.append(connect)
+
+            #Настраиваем бонды, если надо
+            if df.iloc[37]['param'] == 'yes':
+                #(bond_name,bond_int1,bond_int2,bond_mode,bond_tag1,bond_tag2,bond_tag3,bond_tag4)
+                for bond_num in range(4):  # bond0, bond1, bond2, bond3
+                    result = bonds(
+                        bond_name=f'bond{bond_num}',
+                        bond_int1=getattr(af_nodes[i], f'bond{bond_num}_int1'),
+                        bond_int2=getattr(af_nodes[i], f'bond{bond_num}_int2'),
+                        bond_mode=getattr(af_nodes[i], f'bond{bond_num}_mode'),
+                        bond_tag1=getattr(af_nodes[i], f'bond{bond_num}_tag1'),
+                        bond_tag2=getattr(af_nodes[i], f'bond{bond_num}_tag2'),
+                        bond_tag3=getattr(af_nodes[i], f'bond{bond_num}_tag3'),
+                        bond_tag4=getattr(af_nodes[i], f'bond{bond_num}_tag4')
+                    )
+                    cmd += result
+                    tasks += result
             cmd.append('# настраиваем интерфейс управления')
             cmd.append("ifconfig " + mgmt_eth + " up")
             cmd.append("ip a add " + mgmt_ip + "/" + mgmt_mask + " dev " + mgmt_eth)
@@ -204,6 +279,8 @@ def create_config(df):
             cmd.append('sudo su')
             # cmd.append('# устанавливаем tmux, из-под которого будем работать (желательно изучить работу с ним)')
             cmd.append('запускаем tmux')
+
+            #Отключаем cloud-init
             if df.iloc[36]['param'] == 'yes':
                 cmd.append('# отключаем cloud-init')
                 cmd.append('touch /etc/cloud/cloud-init.disabled')
@@ -218,6 +295,19 @@ def create_config(df):
             #Тут GW выбирается по роли интерфейса, старая версия
             #gwint = df.iloc[23]['param']
             # eth0, eth1, eth2, eth3 = [],[],[],[]
+            for eth_num in range(4):  # eth0, eth1, eth2, eth3
+                result = eth(
+                    ip_addr=getattr(af_nodes[i], f'eth{eth_num}_ip'),
+                    mask=getattr(af_nodes[i], f'eth{eth_num}_netmask'), 
+                    gw=getattr(af_nodes[i], f'eth{eth_num}_gw'),
+                    role=getattr(af_nodes[i], f'eth{eth_num}_role'),
+                    ethN=getattr(af_nodes[i], f'eth{eth_num}_name'),
+                    mode=getattr(af_nodes[i], f'eth{eth_num}_mode'),
+                    gwint=af_nodes[i].node_dgw
+                )
+                cmd.extend(result)
+                tasks.extend(result)
+            '''
             cmd += eth(ip_addr=af_nodes[i].eth0_ip, mask=af_nodes[i].eth0_netmask, gw=af_nodes[i].eth0_gw, role=af_nodes[i].eth0_role, ethN=af_nodes[i].eth0_name, mode=af_nodes[i].eth0_mode, gwint=af_nodes[i].node_dgw)
             tasks += eth(ip_addr=af_nodes[i].eth0_ip, mask=af_nodes[i].eth0_netmask, gw=af_nodes[i].eth0_gw, role=af_nodes[i].eth0_role, ethN=af_nodes[i].eth0_name, mode=af_nodes[i].eth0_mode, gwint=af_nodes[i].node_dgw)
             cmd += eth(ip_addr=af_nodes[i].eth1_ip, mask=af_nodes[i].eth1_netmask, gw=af_nodes[i].eth1_gw, role=af_nodes[i].eth1_role, ethN=af_nodes[i].eth1_name, mode=af_nodes[i].eth1_mode, gwint=af_nodes[i].node_dgw)
@@ -226,6 +316,7 @@ def create_config(df):
             tasks += eth(ip_addr=af_nodes[i].eth2_ip, mask=af_nodes[i].eth2_netmask, gw=af_nodes[i].eth2_gw, role=af_nodes[i].eth2_role, ethN=af_nodes[i].eth2_name, mode=af_nodes[i].eth2_mode, gwint=af_nodes[i].node_dgw)
             cmd += eth(ip_addr=af_nodes[i].eth3_ip, mask=af_nodes[i].eth3_netmask, gw=af_nodes[i].eth3_gw, role=af_nodes[i].eth3_role, ethN=af_nodes[i].eth3_name, mode=af_nodes[i].eth3_mode, gwint=af_nodes[i].node_dgw)
             tasks += eth(ip_addr=af_nodes[i].eth3_ip, mask=af_nodes[i].eth3_netmask, gw=af_nodes[i].eth3_gw, role=af_nodes[i].eth3_role, ethN=af_nodes[i].eth3_name, mode=af_nodes[i].eth3_mode, gwint=af_nodes[i].node_dgw)
+            '''
             # eth_arrays = [eth0, eth1, eth2, eth3]
             # for ethui in eth_arrays:
             #     cmd.append(ethui)   # Добавляем текущий список в cmd
@@ -377,6 +468,39 @@ def create_config(df):
 
         print(f"Таски для ноды {af_nodes[i].hostname} добавлены")        
     return(cmd)
+
+def bonds(bond_name, bond_int1, bond_int2, bond_mode, bond_tag1, bond_tag2, bond_tag3, bond_tag4):
+    cmd = []
+    
+    # Проверяем наличие параметров
+    has_int1 = bond_int1 != ""
+    has_int2 = bond_int2 != ""
+    has_mode = bond_mode != ""
+    
+    # Если все три параметра отсутствуют - это норма
+    if not has_int1 and not has_int2 and not has_mode:
+        return cmd  # возвращаем пустой список
+    
+    # хотя бы один параметр, но не  три - кривой бонд
+    if not (has_int1 and has_int2 and has_mode):
+        missing = []
+        if not has_int1: missing.append("bond_int1")
+        if not has_int2: missing.append("bond_int2")
+        if not has_mode: missing.append("bond_mode")
+        print(f"ОШИБКА: Для бонда {bond_name} не хватает параметров: {', '.join(missing)}")
+        return cmd
+    
+    # Если все три параметра есть - настраиваем бонд
+    cmd.append(f'# настройка бонда {bond_name}')
+    cmd.append(f'wsc -c "if bond {bond_name[-1]} {bond_int1} {bond_int2}"')
+    cmd.append(f'wsc -c "if set {bond_name} slaves {bond_int1} {bond_int2}"')
+    cmd.append(f'wsc -c "if set {bond_name} mode {bond_mode}"')
+    
+    if (bond_tag1 != "") or (bond_tag2 != "") or (bond_tag3 != "") or (bond_tag4 != ""):
+        cmd.append(f'wsc -c "if vlan {bond_name} {bond_tag1} {bond_tag2} {bond_tag3} {bond_tag4}"')
+    
+    return cmd
+
 
 def eth(ip_addr,mask,gw,role,ethN,mode,gwint):
     #
@@ -655,13 +779,12 @@ https://{df.iloc[32]['node1']}:3000
 
 
 if __name__ == "__main__":
-    # Вызов sys.exit() закрывает сессию интерпретатора
-    # нужен import sys
-    # sys.exit(main())
     try:
         main()
     except Exception as e:
         print("Произошла ошибка:", e)
+        print("\nТрассировка ошибки:")
+        traceback.print_exc()  # Выводит полную трассировку
     finally:
-        input("Нажмите Enter для выхода...")  
+        input("Нажмите Enter для выхода...")
     
