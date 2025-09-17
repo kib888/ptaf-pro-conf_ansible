@@ -445,7 +445,7 @@ def create_config(df):
         with open(playbook_path, 'r', encoding='utf-8') as f:
             playbook = yaml.safe_load(f) or []
         all_commands = []        
-        all_commands.append('rm /opt/ptaf/conf/wsc/config.sqlite3') # Удаляем базу wsc на каждой ноде
+        all_commands.append('rm /opt/ptaf/conf/wsc/config.sqlite3 2>/dev/null || true') # Удаляем базу wsc на каждой ноде
         filtered_commands = [task for task in tasks if not task.strip().startswith("#")]
         all_commands.extend(filtered_commands)
 
@@ -754,26 +754,31 @@ def main():
     with open(filename + ".txt", "w", encoding="utf-8", newline='\n') as txt_file:
         for line in cmd:
             txt_file.write(line + "\n")
-    print(f'''
-          Команды для ручной установки можно посмотреть в файлике .txt
-       У нас было: 
-            1. Адреса на кластерных интерфейсах нод
-            2. Файлики inventory.yaml и playbook.yaml на первой базовой ноде
-            3. Активированная виртуальная среда source /opt/ptaf/pywsc/bin/activate 
-            4. Запущеный ансибл ansible-playbook -i inventory.yaml playbook.yaml
-            5. ...
-            6. Profit!
-          Дальше запустить инфру, мониторинг и деплой
-/var/pt/infra/current/install.sh
-/var/pt/infra/current/install.sh --action=add_monitoring
-/var/pt/ptaf-deploy/current/install.sh
+
+    readme = f'''
+Команды для ручной установки можно посмотреть в файлике {filename}.txt
+Для автоматической установки: 
+    1. Назначить адреса на кластерных интерфейсах нод типа такого: ifconfig <interface_name> up; ip a add <IP>/<netmask> dev <interface_name>
+    2. Файлики inventory.yaml и playbook.yaml положить на первую базовую ноду
+    3. Активировать виртуальную среду: source /opt/ptaf/pywsc/bin/activate 
+    4. Проверить, что все узлы доступны по кластерным интерфейсам: ansible all -i ./inventory.yaml -m ping
+    5. Запустить ансибл: ansible-playbook -i inventory.yaml playbook.yaml (ансибл )
+    6. Деактивируем виртуальную среду: deactivate
+    7. Profit!
+Дальше запустить инфру, мониторинг и деплой:
+    /var/pt/infra/current/install.sh
+    /var/pt/infra/current/install.sh --action=add_monitoring
+    /var/pt/ptaf-deploy/current/install.sh
 
 Если установка завершилась без ошибок, то будет failed = 0
-подключаемся в UI под login/password - admin/positive и запрашиваем лицензию
-https://{df.iloc[32]['node1']}
+Подключаемся в UI под login/password - admin/positive и запрашиваем лицензию
+    https://{df.iloc[32]['node1']}
 Grafana доступна по ссылке ниже, login/password - admin/admin
-https://{df.iloc[32]['node1']}:3000
-    ''')
+    https://{df.iloc[32]['node1']}:3000
+'''
+    with open('readme.txt', 'w', encoding='utf-8') as file:
+        file.write(readme)
+    print(readme)
     # for x in cmd:
     #     print(x)
 
