@@ -1,0 +1,2120 @@
+
+#
+# commands for 30 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.31/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.31:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.31 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.200 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.200 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.200/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.200/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.200 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.200 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm30
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm30" >> /etc/hosts
+echo "192.168.88.200 ptaf-vm30" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 29 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.30/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.30:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.30 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.199 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.199 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.199/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.199/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.199 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.199 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm29
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm29" >> /etc/hosts
+echo "192.168.88.199 ptaf-vm29" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 28 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.29/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.29:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.29 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.198 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.198 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.198/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.198/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.198 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.198 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm28
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm28" >> /etc/hosts
+echo "192.168.88.198 ptaf-vm28" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 27 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.28/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.28:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.28 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.197 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.197 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.197/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.197/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.197 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.197 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm27
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm27" >> /etc/hosts
+echo "192.168.88.197 ptaf-vm27" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 26 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.27/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.27:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.27 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.196 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.196 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.196/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.196/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.196 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.196 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm26
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm26" >> /etc/hosts
+echo "192.168.88.196 ptaf-vm26" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 25 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.26/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.26:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.26 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.195 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.195 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.195/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.195/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.195 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.195 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm25
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm25" >> /etc/hosts
+echo "192.168.88.195 ptaf-vm25" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 24 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.25/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.25:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.25 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.194 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.194 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.194/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.194/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.194 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.194 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm24
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm24" >> /etc/hosts
+echo "192.168.88.194 ptaf-vm24" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 23 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.24/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.24:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.24 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.193 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.193 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.193/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.193/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.193 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.193 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm23
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm23" >> /etc/hosts
+echo "192.168.88.193 ptaf-vm23" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 22 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.23/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.23:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.23 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.192 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.192 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.192/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.192/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.192 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.192 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm22
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm22" >> /etc/hosts
+echo "192.168.88.192 ptaf-vm22" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 21 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.22/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.22:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.22 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.191 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.191 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.191/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.191/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.191 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.191 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm21
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm21" >> /etc/hosts
+echo "192.168.88.191 ptaf-vm21" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 20 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.21/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.21:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.21 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.190 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.190 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.190/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.190/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.190 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.190 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm20
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm20" >> /etc/hosts
+echo "192.168.88.190 ptaf-vm20" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 19 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.20/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.20:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.20 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.189 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.189 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.189/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.189/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.189 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.189 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm19
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm19" >> /etc/hosts
+echo "192.168.88.189 ptaf-vm19" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 18 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.19/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.19:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.19 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.188 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.188 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.188/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.188/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.188 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.188 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm18
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm18" >> /etc/hosts
+echo "192.168.88.188 ptaf-vm18" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 17 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.18/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.18:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.18 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.187 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.187 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.187/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.187/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.187 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.187 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm17
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm17" >> /etc/hosts
+echo "192.168.88.187 ptaf-vm17" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 16 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.17/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.17:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.17 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.186 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.186 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.186/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.186/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.186 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.186 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm16
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm16" >> /etc/hosts
+echo "192.168.88.186 ptaf-vm16" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 15 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.16/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.16:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.16 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.185 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.185 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.185/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.185/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.185 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.185 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm15
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm15" >> /etc/hosts
+echo "192.168.88.185 ptaf-vm15" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 14 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.15/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.15:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.15 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.184 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.184 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.184/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.184/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.184 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.184 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm14
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm14" >> /etc/hosts
+echo "192.168.88.184 ptaf-vm14" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 13 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.14/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.14:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.14 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.183 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.183 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.183/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.183/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.183 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.183 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm13
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm13" >> /etc/hosts
+echo "192.168.88.183 ptaf-vm13" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 12 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.13/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.13:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.13 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.182 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.182 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.182/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.182/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.182 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.182 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm12
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm12" >> /etc/hosts
+echo "192.168.88.182 ptaf-vm12" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 11 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.12/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.12:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.12 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.181 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.181 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.181/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.181/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.181 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.181 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm11
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm11" >> /etc/hosts
+echo "192.168.88.181 ptaf-vm11" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 10 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.11/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.11:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.11 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.180 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.180 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.180/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.180/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.180 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.180 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm10
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm10" >> /etc/hosts
+echo "192.168.88.180 ptaf-vm10" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 9 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.10/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.10:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.10 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.179 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.179 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.179/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.179/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.179 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.179 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm9
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm9" >> /etc/hosts
+echo "192.168.88.179 ptaf-vm9" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 8 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.9/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.9:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.9 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.178 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.178 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.178/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.178/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.178 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.178 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm8
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm8" >> /etc/hosts
+echo "192.168.88.178 ptaf-vm8" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 7 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.8/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.8:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.8 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.177 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.177 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.177/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.177/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.177 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.177 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm7
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm7" >> /etc/hosts
+echo "192.168.88.177 ptaf-vm7" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 6 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.7/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.7:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.7 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.176 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.176 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.176/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.176/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.176 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.176 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm6
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm6" >> /etc/hosts
+echo "192.168.88.176 ptaf-vm6" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 5 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.6/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.6:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.6 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.175 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.175 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.175/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.175/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.175 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.175 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm5
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm5" >> /etc/hosts
+echo "192.168.88.175 ptaf-vm5" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 4 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.5/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.5:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.5 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.174 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+# настройка интерфейса LAN
+wsc -c "if set eth-int1 inet_method static inet_address 192.168.70.174 inet_netmask 255.255.255.0"
+wsc -c "if set eth-int1 role LAN"
+   # добавляем шлюз через отдельную таблицу для LAN
+wsc -c "route table add eth-int1 129"
+wsc -c "route add default via 192.168.70.1 dev eth-int1 table eth-int1"
+wsc -c "route rule add eth-int1 from 192.168.70.174/32 table eth-int1"
+wsc -c "route rule add eth-int1 to 192.168.70.174/32 table eth-int1"
+wsc -c "route add 192.168.70.0/24 dev eth-int1 src 192.168.70.174 table eth-int1"
+# настройка интерфейса WAN
+wsc -c "if set eth-ext2 inet_method static inet_address 192.168.100.174 inet_netmask 255.255.255.0"
+wsc -c "if set eth-ext2 role WAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm4
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm4" >> /etc/hosts
+echo "192.168.88.174 ptaf-vm4" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 3 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.4/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.4:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.4 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.173 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+wsc -c "if set bond0.123 role WAN"
+wsc -c "if set bond0.123 role LAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm3
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm3" >> /etc/hosts
+echo "192.168.88.173 ptaf-vm3" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 2 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.3/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.3:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.3 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.172 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+wsc -c "if set bond0.123 role WAN"
+wsc -c "if set bond0.123 role LAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm2
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm2" >> /etc/hosts
+echo "192.168.88.172 ptaf-vm2" >> /etc/hosts
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+exit
+
+#
+# commands for 1 node
+#
+# зайти в ОС через консоль под login/pass - pt/positive
+#
+# все команды выполняются из-под root
+sudo su
+# настройка бонда bond0
+wsc -c "if bond 0 eth0 eth1"
+wsc -c "if set bond0 slaves eth0 eth1"
+wsc -c "if set bond0 mode 0"
+wsc -c "if vlan bond0 123   "
+# настройка бонда bond1
+wsc -c "if bond 1 eth2 eth3"
+wsc -c "if set bond1 slaves eth2 eth3"
+wsc -c "if set bond1 mode 1"
+wsc -c "if vlan bond1 123   "
+# настраиваем интерфейс управления
+ifconfig bond0.123 up
+ip a add 192.168.80.2/255.255.255.0 dev bond0.123
+ip route add default via 192.168.80.1
+#
+# подключаемся по SSH к серверу на MGMT интерфейс: 192.168.80.2:22013
+# и выполняем команды ниже
+#
+sudo su
+запускаем tmux
+# назначаем VIP-ы для manage, monitoring, border
+wsc -c "vip set monitoring 192.168.88.170"
+wsc -c "vip set manage 192.168.88.170"
+wsc -c "vip set border 192.168.88.170"
+# настройка интерфейса MGMT
+wsc -c "dhcp set routers false"
+wsc -c "if set bond0.123 inet_method static inet_address 192.168.80.2 inet_netmask 255.255.255.0 inet_gateway 192.168.80.1"
+# настройка интерфейса CLUSTER
+wsc -c "if set bond1.123 inet_method static inet_address 192.168.88.171 inet_netmask 255.255.255.0"
+wsc -c "if set bond1.123 role CLUSTER"
+wsc -c "if set bond0.123 role WAN"
+wsc -c "if set bond0.123 role LAN"
+# Настройка DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+# Настройка NTP
+wsc -c "dhcp set ntp_servers false"
+wsc -c "ntp add time.google.com"
+# задаем hostname
+hostnamectl set-hostname ptaf-vm1
+# задаем Timezone
+wsc -c "timezone Europe/Moscow"
+
+#
+# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку
+#
+wsc -c "config commit"
+echo "127.0.0.1 localhost" > /etc/hosts
+echo "127.0.1.1 ptaf-vm1" >> /etc/hosts
+echo "192.168.88.200 ptaf-vm30" >> /etc/hosts
+echo "192.168.88.199 ptaf-vm29" >> /etc/hosts
+echo "192.168.88.198 ptaf-vm28" >> /etc/hosts
+echo "192.168.88.197 ptaf-vm27" >> /etc/hosts
+echo "192.168.88.196 ptaf-vm26" >> /etc/hosts
+echo "192.168.88.195 ptaf-vm25" >> /etc/hosts
+echo "192.168.88.194 ptaf-vm24" >> /etc/hosts
+echo "192.168.88.193 ptaf-vm23" >> /etc/hosts
+echo "192.168.88.192 ptaf-vm22" >> /etc/hosts
+echo "192.168.88.191 ptaf-vm21" >> /etc/hosts
+echo "192.168.88.190 ptaf-vm20" >> /etc/hosts
+echo "192.168.88.189 ptaf-vm19" >> /etc/hosts
+echo "192.168.88.188 ptaf-vm18" >> /etc/hosts
+echo "192.168.88.187 ptaf-vm17" >> /etc/hosts
+echo "192.168.88.186 ptaf-vm16" >> /etc/hosts
+echo "192.168.88.185 ptaf-vm15" >> /etc/hosts
+echo "192.168.88.184 ptaf-vm14" >> /etc/hosts
+echo "192.168.88.183 ptaf-vm13" >> /etc/hosts
+echo "192.168.88.182 ptaf-vm12" >> /etc/hosts
+echo "192.168.88.181 ptaf-vm11" >> /etc/hosts
+echo "192.168.88.180 ptaf-vm10" >> /etc/hosts
+echo "192.168.88.179 ptaf-vm9" >> /etc/hosts
+echo "192.168.88.178 ptaf-vm8" >> /etc/hosts
+echo "192.168.88.177 ptaf-vm7" >> /etc/hosts
+echo "192.168.88.176 ptaf-vm6" >> /etc/hosts
+echo "192.168.88.175 ptaf-vm5" >> /etc/hosts
+echo "192.168.88.174 ptaf-vm4" >> /etc/hosts
+echo "192.168.88.173 ptaf-vm3" >> /etc/hosts
+echo "192.168.88.172 ptaf-vm2" >> /etc/hosts
+echo "192.168.88.171 ptaf-vm1" >> /etc/hosts
+
+
+# настройка роли узла(ов)
+# Важно! пароль должен совпадать. Если запустили с неправильным то нужно удалять и добавлять по новой "inventory node del <name> force"
+# Узлов с ролью clickhouse должно быть четное число!
+wsc -c "inventory node add ptaf-vm1"
+wsc -c 'inventory node set ptaf-vm1 cluster_ip 192.168.88.171 role master,worker-backend,postgresql,rabbitmq,minio,clickhouse port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm2"
+wsc -c 'inventory node set ptaf-vm2 cluster_ip 192.168.88.172 role master,worker-backend,postgresql,rabbitmq,minio,clickhouse port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm3"
+wsc -c 'inventory node set ptaf-vm3 cluster_ip 192.168.88.173 role master,worker-backend,postgresql,rabbitmq,minio port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm4"
+wsc -c 'inventory node set ptaf-vm4 cluster_ip 192.168.88.174 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm5"
+wsc -c 'inventory node set ptaf-vm5 cluster_ip 192.168.88.175 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm6"
+wsc -c 'inventory node set ptaf-vm6 cluster_ip 192.168.88.176 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm7"
+wsc -c 'inventory node set ptaf-vm7 cluster_ip 192.168.88.177 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm8"
+wsc -c 'inventory node set ptaf-vm8 cluster_ip 192.168.88.178 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm9"
+wsc -c 'inventory node set ptaf-vm9 cluster_ip 192.168.88.179 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm10"
+wsc -c 'inventory node set ptaf-vm10 cluster_ip 192.168.88.180 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm11"
+wsc -c 'inventory node set ptaf-vm11 cluster_ip 192.168.88.181 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm12"
+wsc -c 'inventory node set ptaf-vm12 cluster_ip 192.168.88.182 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm13"
+wsc -c 'inventory node set ptaf-vm13 cluster_ip 192.168.88.183 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm14"
+wsc -c 'inventory node set ptaf-vm14 cluster_ip 192.168.88.184 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm15"
+wsc -c 'inventory node set ptaf-vm15 cluster_ip 192.168.88.185 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm16"
+wsc -c 'inventory node set ptaf-vm16 cluster_ip 192.168.88.186 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm17"
+wsc -c 'inventory node set ptaf-vm17 cluster_ip 192.168.88.187 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm18"
+wsc -c 'inventory node set ptaf-vm18 cluster_ip 192.168.88.188 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm19"
+wsc -c 'inventory node set ptaf-vm19 cluster_ip 192.168.88.189 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm20"
+wsc -c 'inventory node set ptaf-vm20 cluster_ip 192.168.88.190 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm21"
+wsc -c 'inventory node set ptaf-vm21 cluster_ip 192.168.88.191 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm22"
+wsc -c 'inventory node set ptaf-vm22 cluster_ip 192.168.88.192 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm23"
+wsc -c 'inventory node set ptaf-vm23 cluster_ip 192.168.88.193 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm24"
+wsc -c 'inventory node set ptaf-vm24 cluster_ip 192.168.88.194 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm25"
+wsc -c 'inventory node set ptaf-vm25 cluster_ip 192.168.88.195 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm26"
+wsc -c 'inventory node set ptaf-vm26 cluster_ip 192.168.88.196 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm27"
+wsc -c 'inventory node set ptaf-vm27 cluster_ip 192.168.88.197 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm28"
+wsc -c 'inventory node set ptaf-vm28 cluster_ip 192.168.88.198 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm29"
+wsc -c 'inventory node set ptaf-vm29 cluster_ip 192.168.88.199 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory node add ptaf-vm30"
+wsc -c 'inventory node set ptaf-vm30 cluster_ip 192.168.88.200 role worker-traffic port 22013 user_name pt user_password P@ssw0rd sudo_password P@ssw0rd'
+wsc -c "inventory check"
+wsc -c "inventory node list"
+
+
+# установка инфраструктуры
+/var/pt/infra/current/install.sh
+# установка Grafana
+/var/pt/infra/current/install.sh --action=add_monitoring
+# установка AF
+/var/pt/ptaf-deploy/current/install.sh
+#
+#
+# если установка завершилась без ошибок, то будет failed = 0
+# подключаемся в UI под login/password - admin/positive и запрашиваем лицензию
+# https://192.168.88.170
+# Grafana доступна по ссылке ниже, login/password - admin/admin
+# https://192.168.88.170:3000
