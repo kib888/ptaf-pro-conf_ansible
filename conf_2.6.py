@@ -780,8 +780,9 @@ def main():
     3. Активировать виртуальную среду: source /opt/ptaf/pywsc/bin/activate 
     4. Проверить, что все узлы доступны по кластерным интерфейсам: ansible all -i ./inventory.yaml -m ping
     5. Запустить ансибл: ansible-playbook -i inventory.yaml playbook.yaml (ансибл )
-    6. Деактивируем виртуальную среду: deactivate
-    7. Profit!
+    6. Если ансибл упал на этапе config commit, то можно попробовать ещё раз: ansible-playbook -i inventory.yaml playbook.yaml --start-at-task "Commit configuration changes"
+    7. Деактивируем виртуальную среду: deactivate
+    8. Profit!
 Дальше запустить инфру, мониторинг и деплой:
     /var/pt/infra/current/install.sh
     /var/pt/infra/current/install.sh --action=add_monitoring
