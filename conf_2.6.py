@@ -7,11 +7,9 @@ if sys.version_info < (3, 10, 5):
 import argparse
 from dataclasses import dataclass
 import traceback
-# pip3 install ipcalc
 import ipcalc
 
-# pip3 install pandas
-# pip3 install openpyxl
+
 import pandas as pd
 import yaml
 
@@ -19,16 +17,6 @@ import yaml
 pd.set_option('display.width', 300)
 pd.set_option('display.max_columns', 50)
 
-# def read_excel(excel_file, excel_sheet):
-#     #
-#     # Прочесть параметры AF4, и вернуть в виде таблицы
-#     #
-
-#     # открываем файл Excel, и загружаем лист из него
-#     data = pd.read_excel(excel_file, sheet_name=excel_sheet)
-#     df = pd.DataFrame(data, columns=['param', 'node1', 'node2', 'node3', 'node4', 'node5', 'node6', 'node7', 'node8', 'node9', 'node10', 'node11', 'node12', 'node13', 'node14', 'node15', 'node16', 'node17', 'node18', 'node19'])
-#     #print(df)
-#     return(df)
 
 def read_excel(excel_file, excel_sheet):
     #
@@ -264,11 +252,6 @@ def create_config(df):
                 if (mgmt_ip == "None"):
                     print("Ошибка, не определен интерфейс с ролью MGMT/WAN!")
                     exit(1)
-            #if (i != 0):
-            #    connect = 'sshpass -p ' + af_nodes[i].ssh_password + ' ssh -o StrictHostKeyChecking=accept-new -tt pt@' + \
-            #              cluster_ip + ' -p 22013 bash -c \'echo ' + af_nodes[i].ssh_password + ' | sudo -S sh << EOF\n' + \
-            #              af_nodes[i].ssh_password + '\n'
-            #    cmd.append(connect)
 
             #Настраиваем бонды, если надо
             if df.iloc[37]['param'] == 'yes':
@@ -324,20 +307,7 @@ def create_config(df):
                 )
                 cmd.extend(result)
                 tasks.extend(result)
-            '''
-            cmd += eth(ip_addr=af_nodes[i].eth0_ip, mask=af_nodes[i].eth0_netmask, gw=af_nodes[i].eth0_gw, role=af_nodes[i].eth0_role, ethN=af_nodes[i].eth0_name, mode=af_nodes[i].eth0_mode, gwint=af_nodes[i].node_dgw)
-            tasks += eth(ip_addr=af_nodes[i].eth0_ip, mask=af_nodes[i].eth0_netmask, gw=af_nodes[i].eth0_gw, role=af_nodes[i].eth0_role, ethN=af_nodes[i].eth0_name, mode=af_nodes[i].eth0_mode, gwint=af_nodes[i].node_dgw)
-            cmd += eth(ip_addr=af_nodes[i].eth1_ip, mask=af_nodes[i].eth1_netmask, gw=af_nodes[i].eth1_gw, role=af_nodes[i].eth1_role, ethN=af_nodes[i].eth1_name, mode=af_nodes[i].eth1_mode, gwint=af_nodes[i].node_dgw)
-            tasks += eth(ip_addr=af_nodes[i].eth1_ip, mask=af_nodes[i].eth1_netmask, gw=af_nodes[i].eth1_gw, role=af_nodes[i].eth1_role, ethN=af_nodes[i].eth1_name, mode=af_nodes[i].eth1_mode, gwint=af_nodes[i].node_dgw)
-            cmd += eth(ip_addr=af_nodes[i].eth2_ip, mask=af_nodes[i].eth2_netmask, gw=af_nodes[i].eth2_gw, role=af_nodes[i].eth2_role, ethN=af_nodes[i].eth2_name, mode=af_nodes[i].eth2_mode, gwint=af_nodes[i].node_dgw)
-            tasks += eth(ip_addr=af_nodes[i].eth2_ip, mask=af_nodes[i].eth2_netmask, gw=af_nodes[i].eth2_gw, role=af_nodes[i].eth2_role, ethN=af_nodes[i].eth2_name, mode=af_nodes[i].eth2_mode, gwint=af_nodes[i].node_dgw)
-            cmd += eth(ip_addr=af_nodes[i].eth3_ip, mask=af_nodes[i].eth3_netmask, gw=af_nodes[i].eth3_gw, role=af_nodes[i].eth3_role, ethN=af_nodes[i].eth3_name, mode=af_nodes[i].eth3_mode, gwint=af_nodes[i].node_dgw)
-            tasks += eth(ip_addr=af_nodes[i].eth3_ip, mask=af_nodes[i].eth3_netmask, gw=af_nodes[i].eth3_gw, role=af_nodes[i].eth3_role, ethN=af_nodes[i].eth3_name, mode=af_nodes[i].eth3_mode, gwint=af_nodes[i].node_dgw)
-            '''
-            # eth_arrays = [eth0, eth1, eth2, eth3]
-            # for ethui in eth_arrays:
-            #     cmd.append(ethui)   # Добавляем текущий список в cmd
-            #     #tasks.append(ethui)
+
             #Ищем роль и ван и LAN на воркер или base-worker или на base ноде, а если LAN нет, то добавляем роль LAN к интерфейсу с ролью WAN
             if af_nodes[i].node_role == 'worker' or af_nodes[i].node_role == 'base-worker' or af_nodes[i].node_role == 'base':
                 wan_found = False
