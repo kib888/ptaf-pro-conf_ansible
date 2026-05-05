@@ -13,19 +13,25 @@
 1. Заполнить AF4_conf.xlsx без изменения названия (есть английская и русская версия)
 2. Запустить скрипт (можно из .exe или ELF или .py)
 3. На выходе будет 4 файла: 
-   - Файл readme.txt с инструкцией, что делать
-   - Текстовый файл для ручной установки кластера как обычно (AF4_conf.txt).
-   - Файл playbook.yaml со скриптами конфигурирования wsc и других параметров
-   - Файл inventory.yaml c информацией о хостах кластера 
+   - ```readme.txt``` с инструкцией, что делать
+   - ```AF4_conf.txt``` текстовый файл для ручной установки кластера как в мануале.
+   - ```playbook.yaml``` со скриптами конфигурирования wsc и других параметров
+   - ```inventory.yaml``` c информацией о хостах кластера 
 
 4. Для автоматической установки: 
-    1. Назначить адреса на кластерных интерфейсах нод типа такого: ifconfig <interface_name> up; ip a add <IP>/<netmask> dev <interface_name>
+    1. Назначить адреса на кластерных интерфейсах нод типа такого: 
+    ```ifconfig <interface_name> up; ip a add <IP>/<netmask> dev <interface_name>```
     2. Файлики inventory.yaml и playbook.yaml положить на первую базовую ноду
-    3. Активировать виртуальную среду: ```source /opt/ptaf/pywsc/bin/activate``` 
-    4. Проверить, что все узлы доступны по кластерным интерфейсам: ```ansible all -i ./inventory.yaml -m ping```
-    5. Запустить ансибл: ```ansible-playbook -i inventory.yaml playbook.yaml```
-    6. Если ансибл упал на этапе config commit, то можно попробовать ещё раз: ```ansible-playbook -i inventory.yaml playbook.yaml --start-at-task "Commit configuration changes"```
-    7. Деактивируем виртуальную среду: ```deactivate```
+    3. Активировать виртуальную среду: 
+    ```source /opt/ptaf/pywsc/bin/activate``` 
+    4. Проверить, что все узлы доступны по кластерным интерфейсам: 
+    ```ansible all -i ./inventory.yaml -m ping```
+    5. Запустить ансибл: 
+    ```ansible-playbook -i inventory.yaml playbook.yaml```
+    6. Если ансибл упал на этапе config commit, то можно попробовать ещё раз: 
+    ```ansible-playbook -i inventory.yaml playbook.yaml --start-at-task "Commit configuration changes"```
+    7. Деактивируем виртуальную среду: 
+    ```deactivate```
     8. Profit!
 5. Дальше запустить инфру, мониторинг и деплой:
     /var/pt/infra/current/install.sh

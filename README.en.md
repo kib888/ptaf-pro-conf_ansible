@@ -19,7 +19,7 @@ Archives with configuration and executable files are located in [RELEASES](https
 
 3. The output will be 4 files:
    - `readme.txt` file with instructions on what to do
-   - `AF4_conf.txt` text file for manual cluster installation as usual 
+   - `AF4_conf.txt` text file for manual cluster installation
    - `playbook.yaml` file with scripts for configuring wsc and other parameters
    - `inventory.yaml` file containing cluster host information
 
