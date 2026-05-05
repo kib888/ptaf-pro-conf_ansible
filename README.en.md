@@ -9,11 +9,13 @@ The script allows you to deploy a PTAF PRO cluster automatically from a large nu
 **How it works:**
 An Ansible playbook is created, which can be run on the first base node of PTAF PRO. It executes wsc configuration commands on all nodes and prepares the cluster for AF PRO installation.
 
+Archives with configuration and executable files are located in [RELEASES](https://github.com/kib888/ptaf-pro-conf_ansible/releases) 
+
 ## How to:
 
 1. Fill out `AF4_conf.xlsx` without changing the filename (English and Russian versions available)
 
-2. Run the script (can be run from the .exe)
+2. Run the script in the same directory where .xlsx is located (you can run it from the executable file .exe or ELF or .py).
 
 3. The output will be 4 files:
    - `readme.txt` file with instructions on what to do
