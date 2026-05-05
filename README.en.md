@@ -16,10 +16,10 @@ An Ansible playbook is created, which can be run on the first base node of PTAF 
 2. Run the script (can be run from the .exe)
 
 3. The output will be 4 files:
-   - A `readme.txt` file with instructions on what to do
-   - A text file for manual cluster installation as usual (`AF4_conf.txt`)
-   - A `playbook.yaml` file with scripts for configuring wsc and other parameters
-   - An `inventory.yaml` file containing cluster host information
+   - `readme.txt` file with instructions on what to do
+   - `AF4_conf.txt` text file for manual cluster installation as usual 
+   - `playbook.yaml` file with scripts for configuring wsc and other parameters
+   - `inventory.yaml` file containing cluster host information
 
 4. For automatic installation:
    1. Assign addresses on the cluster interfaces of the nodes like this:  
