@@ -682,7 +682,7 @@ def bonds(bond_name, bond_int1, bond_int2, bond_mode, bond_tag1, bond_tag2, bond
         if not has_int1: missing.append("bond_int1")
         if not has_int2: missing.append("bond_int2")
         if not has_mode: missing.append("bond_mode")
-        print(f"{t("error_bond_params")} {bond_name}: {', '.join(missing)}")
+        print(f"{t('error_bond_params')} {bond_name}: {', '.join(missing)}")
         return cmd
     
     # Если все три параметра есть - настраиваем бонд
@@ -734,11 +734,11 @@ def eth(ip_addr,mask,gw,role,ethN,mode,gwint):
                     addr = ipcalc.IP(ip=str(ip_addr), mask=str(mask))
                     cmd.append('wsc -c "route add ' + str(addr.guess_network()) + ' dev '+ ethN + ' src ' + ip_addr + ' table ' + ethN  + '"')
         else:
-            print("Error: режим dhcp, но почему-то задан IP")
+            print("Error: dhcp mode, but IP exists")
             exit(1)
     else:
         if (mode == "dhcp"):
-            cmd.append('# настройка интерфейса ' + role)
+            cmd.append('# ' +t("configure_interface")  + role)
             if (role == "WAN"):
                 cmd.append('wsc -c "if set ' + ethN + ' role WAN"')
             elif (role == "CLUSTER"):
@@ -825,7 +825,7 @@ def generate_inventory(af_nodes, output_file="inventory.yaml"):
     with open(output_file, "w", encoding="utf-8") as f:
         yaml.dump(inventory, f, default_flow_style=False, allow_unicode=True)
 
-    print(f"{output_file} {t("file_created")}")
+    print(f"{output_file} {t('file_created')}")
 def generate_commands_playbook(output_file="playbook.yaml", *functions):
     """
     Выполняет переданные функции, собирает команды из них (игнорирует комментарии) и создает Ansible плейбук.
@@ -839,7 +839,7 @@ def generate_commands_playbook(output_file="playbook.yaml", *functions):
     for func in functions:
         commands = func()
         if not isinstance(commands, list):
-            raise ValueError(f"{func.__name__} {t("invalid_function")}")
+            raise ValueError(f"{func.__name__} {t('invalid_function')}")
         # Исключаем комментарии, начинающиеся с #
         filtered_commands = [cmd for cmd in commands if not cmd.strip().startswith("#")]
         all_commands.extend(filtered_commands)
@@ -867,7 +867,7 @@ def generate_commands_playbook(output_file="playbook.yaml", *functions):
     with open(output_file, "w", encoding="utf-8") as f:
         yaml.dump(playbook, f, default_flow_style=False, allow_unicode=True)
 
-    print(f"{output_file} {t("file_created")}")
+    print(f"{output_file} {t('file_created')}")
 def generate_commands_playbook_check(af_nodes):
     playbook_path = 'playbook.yaml'
 
