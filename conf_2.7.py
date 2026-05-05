@@ -1,4 +1,4 @@
-__version__ = "2.6"
+__version__ = "2.7"
 
 import sys
 if sys.version_info < (3, 10, 5):
@@ -8,15 +8,225 @@ import argparse
 from dataclasses import dataclass
 import traceback
 import ipcalc
-
+import glob
 
 import pandas as pd
 import yaml
+
 
 # выставим ширину вывода pandas-ы
 pd.set_option('display.width', 300)
 pd.set_option('display.max_columns', 50)
 
+
+# --- localization ---
+LANG = "ru"
+
+MESSAGES = {
+    # --- общие ---
+    "configurator_desc": {
+        "ru": "Конфигуратор конфигов для AF4",
+        "en": "AF4 configuration generator"
+    },
+
+    # --- DNS / NTP ---
+    "dns_setup": {
+        "ru": "Настройка DNS",
+        "en": "DNS configuration"
+    },
+    "ntp_setup": {
+        "ru": "Настройка NTP",
+        "en": "NTP configuration"
+    },
+
+    # --- ошибки ---
+    "error_fill_fields": {
+        "ru": "Заполните все цветные поля или очистите!",
+        "en": "Fill all highlighted fields or clear them!"
+    },
+    "error_no_cluster": {
+        "ru": "Ошибка, не определен интерфейс с ролью CLUSTER!",
+        "en": "Error: CLUSTER interface is not defined!"
+    },
+    "error_no_mgmt": {
+        "ru": "Ошибка, не определен интерфейс с ролью MGMT/WAN!",
+        "en": "Error: MGMT/WAN interface is not defined!"
+    },
+    "error_bond_params": {
+        "ru": "ОШИБКА: Не хватает параметров для бонда ",
+        "en": "ERROR: Missing parameters for bond "
+    },
+
+    # --- действия ---
+    "enter_os": {
+        "ru": "зайти в ОС через консоль под login/pass - pt/positive\n# Все команды выполняются с правами root\n#",
+        "en": "log in to the OS via console using login/password: pt/positive\n# All commands must be executed with root privileges\n#"
+    },
+
+    "start_tmux": {
+        "ru": "запускаем tmux",
+        "en": "start tmux"
+    },
+
+    # --- сеть ---
+    "configure_mgmt": {
+        "ru": "настраиваем интерфейс управления",
+        "en": "configure management interface"
+    },
+    "connect_ssh": {
+        "ru": "подключаемся по SSH к серверу на MGMT интерфейс ",
+        "en": "connect via SSH to the server on the MGMT interface "
+    },
+
+    # --- cloud-init ---
+    "disable_cloud_init": {
+        "ru": "отключаем cloud-init",
+        "en": "disable cloud-init"
+    },
+    "disable_cloud_network": {
+        "ru": "отключаем автоматическое управление сетевыми интерфейсами в cloud-init",
+        "en": "disable automatic network configuration in cloud-init"
+    },
+
+    # --- VIP ---
+    "set_vip": {
+        "ru": "назначаем VIP-ы для manage, monitoring, border",
+        "en": "assign VIPs for manage, monitoring, and border"
+    },
+
+    # --- hostname / timezone ---
+    "set_hostname": {
+        "ru": "задаем hostname",
+        "en": "set hostname"
+    },
+    "set_timezone": {
+        "ru": "задаем Timezone",
+        "en": "set timezone"
+    },
+
+    # --- commit ---
+    "commit_warning": {
+        "ru": "после этой команды возможно прервется сеть, необходимо переподключиться и продолжить установку",
+        "en": "after this command, network connectivity may be interrupted; reconnect and continue the installation"
+    },
+
+    # --- роли ---
+    "configure_roles": {
+        "ru": "настройка роли узла(ов)",
+        "en": "configure node roles"
+    },
+    "password_warning": {
+        "ru": "Важно! Пароль должен совпадать. Если запустили с неправильным то нужно удалять и добавлять по новой",
+        "en": "Important! Passwords must match. If incorrect, nodes must be removed and added again"
+    },
+    "clickhouse_warning": {
+        "ru": "Узлов с ролью clickhouse должно быть четное число!",
+        "en": "The number of nodes with the clickhouse role must be even!"
+    },
+
+    # --- установка ---
+    "install_infra": {
+        "ru": "установка инфраструктуры",
+        "en": "install infrastructure"
+    },
+    "install_grafana": {
+        "ru": "установка Grafana",
+        "en": "install Grafana"
+    },
+    "install_af": {
+        "ru": "установка AF",
+        "en": "install AF"
+    },
+
+    # --- ntp warning ---
+    "ntp_missing": {
+        "ru": "NTP НЕ УКАЗАН! (для продуктива рекомендуется указать)",
+        "en": "NTP NOT SPECIFIED! (recommended for production)"
+    },
+
+    # --- финал ---
+    "install_success": {
+        "ru": "если установка завершилась без ошибок, то будет failed = 0",
+        "en": "if installation completes successfully, failed = 0"
+    },
+    "ui_login": {
+        "ru": "подключаемся в UI под login/password - admin/positive и запрашиваем лицензию",
+        "en": "log in to the UI using admin/positive and request a license"
+    },
+    "grafana_access": {
+        "ru": "Grafana доступна по ссылке ниже, login/password - admin/admin",
+        "en": "Grafana is available at the link below (admin/admin)"
+    },
+
+    # --- bonds ---
+    "bond_setup": {
+        "ru": "настройка бонда ",
+        "en": "configure bond "
+    },
+
+    # --- интерфейсы ---
+    "configure_interface": {
+        "ru": "настройка интерфейса ",
+        "en": "configure interface "
+    },
+    "add_gateway_table": {
+        "ru": "добавляем шлюз через отдельную таблицу для ",
+        "en": "add gateway via separate routing table for "
+    },
+
+    # --- файлы ---
+    "file_created": {
+        "ru": "создан успешно!",
+        "en": "created successfully!"
+    },
+    "tasks_added": {
+        "ru": "Таски добавлены для ноды ",
+        "en": "Tasks added for node "
+    },
+    "checks_added": {
+        "ru": "Проверки добавлены для ноды ",
+        "en": "Checks added for node "
+    },
+
+    # --- misc ---
+    "empty_nodes": {
+        "ru": "Список узлов af_nodes пуст!",
+        "en": "af_nodes list is empty!"
+    },
+    "invalid_function": {
+        "ru": "функция должна возвращать список!",
+        "en": "function must return a list!"
+    },
+    "no_commands": {
+        "ru": "Ни одна из функций не вернула команды!",
+        "en": "No commands were returned by any function!"
+    },
+
+    # --- python version ---
+    "python_version": {
+        "ru": "Пожалуйста обновите Python до версии 3.10.4 или выше",
+        "en": "Please upgrade Python to version 3.10.4 or higher"
+    },
+
+    # --- exit ---
+    "press_enter": {
+        "ru": "Нажмите Enter для выхода...",
+        "en": "Press Enter to exit..."
+    },
+    "error_occurred": {
+        "ru": "Произошла ошибка:",
+        "en": "An error occurred:"
+    },
+    "traceback": {
+        "ru": "Трассировка ошибки:",
+        "en": "Traceback:"
+    }
+}
+    
+
+def t(key, **kwargs):
+    text = MESSAGES.get(key, {}).get(LANG, key)
+    return text.format(**kwargs)
 
 def read_excel(excel_file, excel_sheet):
     #
@@ -40,7 +250,7 @@ def dns(df):
     # DNS
     #
     cmd = []
-    cmd.append("# Настройка DNS")
+    cmd.append("\n# " + t("dns_setup"))
     if (df.iloc[31]['node1'] != ""):
         cmd.append('echo "nameserver ' + df.iloc[31]['node1'] + '" > /etc/resolv.conf')
         if (df.iloc[31]['node2'] != ""):
@@ -55,7 +265,7 @@ def ntp(df):
     #
     cmd = []
     if (df.iloc[29]['node1'] != ""):
-        cmd.append("# Настройка NTP")
+        cmd.append("\n# " + t("ntp_setup"))
         cmd.append('wsc -c "dhcp set ntp_servers false"')
         cmd.append('wsc -c "ntp add ' + df.iloc[29]['node1'] + '"')
         if (df.iloc[29]['node2'] != ""):
@@ -235,22 +445,21 @@ def create_config(df):
             continue
             #break
         elif (len(af_nodes[i].node_role) > 0 and (af_nodes[i].ssh_password == "" or af_nodes[i].hostname == "" or af_nodes[i].eth0_ip == "")):
-            print("Заполните все цветные поля или очистите!")
+            print(t("error_fill_fields"))
             exit(1)
         else:
-            cmd.append('\n#\n# commands for ' + str(i+1) + ' node\n#')
-            cmd.append('# зайти в ОС через консоль под login/pass - pt/positive\n#')
-            cmd.append('# все команды выполняются из-под root')
+            cmd.append('\n#\n# COMMANDS FOR ' + str(i+1) + ' NODE\n#')
+            cmd.append('# ' + t("enter_os"))
             cmd.append('sudo su')
             cluster_ip = get_ip(af_nodes[i], "CLUSTER")[0]
             if cluster_ip == "None":
-                print("Ошибка, не определен интерфейс с ролью CLUSTER!")
+                print(t("error_no_cluster"))
                 exit(1)
             mgmt_ip, mgmt_eth, mgmt_mask, mgmt_gw = get_ip(af_nodes[i], "MGMT")
             if (mgmt_ip == "None"):
                 mgmt_ip, mgmt_eth, mgmt_mask, mgmt_gw = get_ip(af_nodes[i], "WAN")
                 if (mgmt_ip == "None"):
-                    print("Ошибка, не определен интерфейс с ролью MGMT/WAN!")
+                    print(t("error_no_mgmt"))
                     exit(1)
 
             #Настраиваем бонды, если надо
@@ -269,16 +478,15 @@ def create_config(df):
                     )
                     cmd += result
                     tasks += result
-            cmd.append('# настраиваем интерфейс управления')
+            cmd.append('# '+ t("configure_mgmt"))
             cmd.append("ifconfig " + mgmt_eth + " up")
             cmd.append("ip a add " + mgmt_ip + "/" + mgmt_mask + " dev " + mgmt_eth)
             if (len(mgmt_gw) > 0):
                 cmd.append("ip route add default via " + mgmt_gw)
-            cmd.append('#\n# подключаемся по SSH к серверу на MGMT интерфейс: ' + mgmt_ip + ":22013")
-            cmd.append('# и выполняем команды ниже\n#')
+            cmd.append('#\n# ' + t("connect_ssh")  + mgmt_ip + ":22013")
             cmd.append('sudo su')
             # cmd.append('# устанавливаем tmux, из-под которого будем работать (желательно изучить работу с ним)')
-            cmd.append('запускаем tmux')
+            cmd.append('# ' +t("start_tmux"))
 
             #Отключаем cloud-init
             if df.iloc[36]['param'] == 'yes':
@@ -290,7 +498,7 @@ def create_config(df):
                 tasks.append('mkdir -p /etc/cloud/cloud.cfg.d')
                 cmd.append('echo "network: {config: disabled}" > /etc/cloud/cloud.cfg.d/98-disable-network-config.cfg')
                 tasks.append('echo "network: {config: disabled}" > /etc/cloud/cloud.cfg.d/98-disable-network-config.cfg')
-            cmd.append('# назначаем VIP-ы для manage, monitoring, border')
+            cmd.append('# ' + t("set_vip"))
             cmd += vip(df)
             #Тут GW выбирается по роли интерфейса, старая версия
             #gwint = df.iloc[23]['param']
@@ -350,7 +558,7 @@ def create_config(df):
             ntp_str = ntp(df)
             if (len(ntp_str) > 1):
                 cmd += ntp_str
-            cmd.append('# задаем hostname')
+            cmd.append('\n# ' + t("set_hostname"))
             hstn.append('echo "' + cluster_ip + " " + af_nodes[i].hostname + '" >> /etc/hosts')
             cmd.append('hostnamectl set-hostname ' + af_nodes[i].hostname)
             tasks.append('hostnamectl set-hostname ' + af_nodes[i].hostname)
@@ -361,10 +569,10 @@ def create_config(df):
                 tasks.append('echo "127.0.1.1 ' + af_nodes[i].hostname + '" >> /etc/hosts')
                 cmd.append('echo "'+ cluster_ip + " " + af_nodes[i].hostname + '" >> /etc/hosts')
                 tasks.append('echo "'+ cluster_ip + " " + af_nodes[i].hostname + '" >> /etc/hosts')
-            cmd.append('# задаем Timezone')
+            cmd.append('# ' + t("set_timezone"))
             cmd += timezone(df)
 
-            cmd.append('\n#\n# после этой команды возможно прервется сеть, необходимо переподключиться в "sudo tmux a" и убедиться что commit прошел успешно и продолжить установку\n#')
+            cmd.append('\n#\n# ' + t("commit_warning") + '\n#')
             cmd.append('wsc -c "config commit"')
             # commands.append('wsc -c "config commit"')
 
@@ -398,9 +606,9 @@ def create_config(df):
                     tasks.append('echo "127.0.1.1 ' + af_nodes[i].hostname + '" >> /etc/hosts')
                     cmd += hstn
                     tasks += hstn
-                cmd.append('\n\n# настройка роли узла(ов)')
-                cmd.append("# Важно! пароль должен совпадать. Если запустили с неправильным то нужно удалять и добавлять по новой \"inventory node del <name> force\"")
-                cmd.append("# Узлов с ролью clickhouse должно быть четное число!")
+                cmd.append('\n\n# ' + t("configure_roles"))
+                cmd.append("# " + t("password_warning")+ "\" inventory node del <name> force\"")
+                cmd.append("# "+ t("clickhouse_warning"))
 
                 # добавляем узлы в кластер с base по worker (читаем массив clstr с конца)
                 k = len(clstr)
@@ -410,22 +618,22 @@ def create_config(df):
                     tasks.append(clstr[k])
                 cmd.append('wsc -c "inventory check"')
                 cmd.append('wsc -c "inventory node list"')
-                cmd.append('\n\n# установка инфраструктуры')
+                cmd.append('\n\n# '+ t("install_infra"))
                 if (len(ntp_str) != 0):
                     cmd.append('/var/pt/infra/current/install.sh')
                 else:
-                    cmd.append('# NTP НЕ УКАЗАН! (для продуктива рекомендуется указать)')
+                    cmd.append('# ' + t("ntp_missing"))
                     cmd.append('/var/pt/infra/current/install.sh --without-ntp')
-                cmd.append('# установка Grafana')
+                cmd.append('# ' +t("install_grafana"))
                 cmd.append('/var/pt/infra/current/install.sh --action=add_monitoring')
                 #cmd.append('wsc -c "config commit"')
-                cmd.append('# установка AF')
+                cmd.append('# ' + t("install_af"))
                 cmd.append('/var/pt/ptaf-deploy/current/install.sh')
 
-                cmd.append('#\n#\n# если установка завершилась без ошибок, то будет failed = 0')
-                cmd.append('# подключаемся в UI под login/password - admin/positive и запрашиваем лицензию')
+                cmd.append('#\n#\n# ' + t("install_success"))
+                cmd.append('# ' +t("ui_login"))
                 cmd.append('# https://' + df.iloc[32]['node1'])
-                cmd.append('# Grafana доступна по ссылке ниже, login/password - admin/admin')
+                cmd.append('# ' + t("grafana_access"))
                 cmd.append('# https://' + df.iloc[32]['node1'] + ":3000")
 
         playbook_path = 'playbook.yaml'
@@ -453,7 +661,7 @@ def create_config(df):
         with open(playbook_path, "w", encoding="utf-8") as f:
             yaml.dump(playbook, f, default_flow_style=False, allow_unicode=True)
 
-        print(f"Таски для ноды {af_nodes[i].hostname} добавлены")        
+        print(t("tasks_added") + af_nodes[i].hostname )        
     return(cmd)
 
 def bonds(bond_name, bond_int1, bond_int2, bond_mode, bond_tag1, bond_tag2, bond_tag3, bond_tag4):
@@ -474,11 +682,11 @@ def bonds(bond_name, bond_int1, bond_int2, bond_mode, bond_tag1, bond_tag2, bond
         if not has_int1: missing.append("bond_int1")
         if not has_int2: missing.append("bond_int2")
         if not has_mode: missing.append("bond_mode")
-        print(f"ОШИБКА: Для бонда {bond_name} не хватает параметров: {', '.join(missing)}")
+        print(f"{t("error_bond_params")} {bond_name}: {', '.join(missing)}")
         return cmd
     
     # Если все три параметра есть - настраиваем бонд
-    cmd.append(f'# настройка бонда {bond_name}')
+    cmd.append('# ' + t("bond_setup") + bond_name)
     cmd.append(f'wsc -c "if bond {bond_name[-1]} {bond_int1} {bond_int2}"')
     cmd.append(f'wsc -c "if set {bond_name} slaves {bond_int1} {bond_int2}"')
     cmd.append(f'wsc -c "if set {bond_name} mode {bond_mode}"')
@@ -498,7 +706,7 @@ def eth(ip_addr,mask,gw,role,ethN,mode,gwint):
 
     if (ip_addr != ""):
         if (mode == "static"):
-            cmd.append('# настройка интерфейса ' + role)
+            cmd.append('# ' + t("configure_interface") + role)
             # если роль текущего интерфейса = интерфейсу на который вешаем дефолтный GW
             if(role == gwint):
                 #commands.append('ip addr flush dev ' + ethN)
@@ -514,7 +722,7 @@ def eth(ip_addr,mask,gw,role,ethN,mode,gwint):
                     cmd.append('wsc -c "if set ' + ethN + ' role ' + role + '"')
                 # если есть gw для LAN (для CLUSTER маршрут не добавляем, это должна быть изолировання подсеть)
                 if (gw != "" and role != "CLUSTER"):
-                    cmd.append('   # добавляем шлюз через отдельную таблицу для ' + role)
+                    cmd.append('   # ' +t("add_gateway_table" + role))
                     # номера таблиц должны отличаться, считаем, что у нас либо LAN, либо CLUSTER таблица
                     table_num = "128"
                     if (role == "LAN"):
@@ -552,7 +760,7 @@ def generate_inventory(af_nodes, output_file="inventory.yaml"):
     """
     # Проверяем, что список узлов не пуст
     if not af_nodes:
-        raise ValueError("Список узлов af_nodes пуст!")
+        raise ValueError(t("empty_nodes"))
 
     # Вспомогательная функция для нахождения IP интерфейса с ролью "CLUSTER"
     def get_cluster_ip(node):
@@ -617,7 +825,7 @@ def generate_inventory(af_nodes, output_file="inventory.yaml"):
     with open(output_file, "w", encoding="utf-8") as f:
         yaml.dump(inventory, f, default_flow_style=False, allow_unicode=True)
 
-    print(f"Файл {output_file} создан успешно!")
+    print(f"{output_file} {t("file_created")}")
 def generate_commands_playbook(output_file="playbook.yaml", *functions):
     """
     Выполняет переданные функции, собирает команды из них (игнорирует комментарии) и создает Ansible плейбук.
@@ -631,14 +839,14 @@ def generate_commands_playbook(output_file="playbook.yaml", *functions):
     for func in functions:
         commands = func()
         if not isinstance(commands, list):
-            raise ValueError(f"Функция {func.__name__} должна возвращать список!")
+            raise ValueError(f"{func.__name__} {t("invalid_function")}")
         # Исключаем комментарии, начинающиеся с #
         filtered_commands = [cmd for cmd in commands if not cmd.strip().startswith("#")]
         all_commands.extend(filtered_commands)
 
     # Проверяем, что список команд не пуст
     if not all_commands:
-        raise ValueError("Ни одна из функций не вернула команды!")
+        raise ValueError(t("no_commands"))
 
     # Формируем задачи для плейбука
     directives = [
@@ -659,7 +867,7 @@ def generate_commands_playbook(output_file="playbook.yaml", *functions):
     with open(output_file, "w", encoding="utf-8") as f:
         yaml.dump(playbook, f, default_flow_style=False, allow_unicode=True)
 
-    print(f"Файл {output_file} создан успешно!")
+    print(f"{output_file} {t("file_created")}")
 def generate_commands_playbook_check(af_nodes):
     playbook_path = 'playbook.yaml'
 
@@ -705,13 +913,48 @@ def generate_commands_playbook_check(af_nodes):
     with open(playbook_path, "w", encoding="utf-8") as f:
         yaml.dump(playbook, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
 
-        print(f"Проверки для ноды {af_nodes[0].hostname} добавлены")    
+        print(t("checks_added") + af_nodes[0].hostname)    
 def main():
     # читаем параметры
     parser = argparse.ArgumentParser(prog="conf.py", prefix_chars="-", description="Конфигуратор конфигов для AF4", usage="conf.py -e ""AF4_conf.xlsx"" -s ""Sheet1""")
-    parser.add_argument("-e", "--excel", help="Excel file name", type=str, default="AF4_conf.xlsx", required=False)
+    parser.add_argument("-e", "--excel", help="Excel file name", type=str, required=False)
     parser.add_argument("-s", "--sheet", help="Excel Sheet name", type=str, default="Sheet1", required=False)
     args = parser.parse_args()
+    
+    if not args.excel:
+        # ищем все xlsx файлы в текущей директории
+        files = glob.glob("*.xlsx")
+
+        if not files:
+            print("No .xlsx files found in current directory!")
+            exit(1)
+
+        # выводим список
+        print("Select Excel file:")
+        for i, file in enumerate(files, start=1):
+            print(f"{i}. {file}")
+
+        # выбор пользователя
+        while True:
+            try:
+                choice = int(input("Enter file number: "))
+                if 1 <= choice <= len(files):
+                    args.excel = files[choice - 1]
+                    break
+                else:
+                    print("Invalid number, try again.")
+            except ValueError:
+                print("Please enter a number.")
+
+    from pathlib import Path
+
+    global LANG
+    filename = Path(args.excel).stem
+
+    if filename.endswith("_en"):
+        LANG = "en"
+    else:
+        LANG = "ru"
 
     # загружаем Excel-файл
     df = read_excel(args.excel, args.sheet)
@@ -742,7 +985,8 @@ def main():
         for line in cmd:
             txt_file.write(line + "\n")
 
-    readme = f'''
+    README = {
+    "ru": f"""
 Команды для ручной установки можно посмотреть в файлике {filename}.txt
 Для автоматической установки: 
     1. Назначить адреса на кластерных интерфейсах нод типа такого: ifconfig <interface_name> up; ip a add <IP>/<netmask> dev <interface_name>
@@ -763,7 +1007,44 @@ def main():
     https://{df.iloc[32]['node1']}
 Grafana доступна по ссылке ниже, login/password - admin/admin
     https://{df.iloc[32]['node1']}:3000
-'''
+""",
+    "en": f"""
+Manual installation commands can be found in the file {filename}.txt
+
+For automated installation:
+    1. Assign IP addresses on the cluster interfaces of the nodes, for example:
+       ifconfig <interface_name> up; ip a add <IP>/<netmask> dev <interface_name>
+    2. Copy the inventory.yaml and playbook.yaml files to the first base node
+    3. Activate the virtual environment:
+       source /opt/ptaf/pywsc/bin/activate
+    4. Verify that all nodes are reachable via cluster interfaces:
+       ansible all -i ./inventory.yaml -m ping
+    5. Run Ansible:
+       ansible-playbook -i inventory.yaml playbook.yaml
+    6. If Ansible fails at the config commit stage, you can retry:
+       ansible-playbook -i inventory.yaml playbook.yaml --start-at-task "Commit configuration changes"
+    7. Deactivate the virtual environment:
+       deactivate
+    8. Done!
+
+Then run infrastructure, monitoring, and deployment:
+    /var/pt/infra/current/install.sh
+    /var/pt/infra/current/install.sh --action=add_monitoring
+    /var/pt/ptaf-deploy/current/install.sh
+
+If the installation completes successfully, failed = 0
+
+Log in to the UI using login/password: admin/positive and request a license:
+    https://{df.iloc[32]['node1']}
+
+Grafana is available at the link below (login/password: admin/admin):
+    https://{df.iloc[32]['node1']}:3000
+"""
+}
+
+    readme = README[LANG]
+
+
     with open('readme.txt', 'w', encoding='utf-8') as file:
         file.write(readme)
     print(readme)
@@ -775,9 +1056,9 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        print("Произошла ошибка:", e)
-        print("\nТрассировка ошибки:")
+        print(t("error_occurred"), e)
+        print("\n" + t("traceback"))
         traceback.print_exc()  # Выводит полную трассировку
     finally:
-        input("Нажмите Enter для выхода...")
+        input(t("press_enter"))
     
