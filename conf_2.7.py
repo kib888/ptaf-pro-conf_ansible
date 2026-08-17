@@ -640,7 +640,6 @@ def create_config(df):
         with open(playbook_path, 'r', encoding='utf-8') as f:
             playbook = yaml.safe_load(f) or []
         all_commands = []        
-        all_commands.append('rm /opt/ptaf/conf/wsc/config.sqlite3 2>/dev/null || true') # Удаляем базу wsc на каждой ноде
         filtered_commands = [task for task in tasks if not task.strip().startswith("#")]
         all_commands.extend(filtered_commands)
 
@@ -655,7 +654,8 @@ def create_config(df):
             "hosts": af_nodes[i].hostname,
             "tasks": directives
         }
-        playbook.insert(0, playb)
+        playbook.insert(1, playb)
+#        playbook.append(playb)
 
         # Сохраняем плейбук в YAML-файл
         with open(playbook_path, "w", encoding="utf-8") as f:
@@ -717,7 +717,7 @@ def eth(ip_addr,mask,gw,role,ethN,mode,gwint):
                 if (role == "WAN" or role == "LAN"):
                     cmd.append('wsc -c "if set ' + ethN + ' role ' + gwint +'"')
             else:
-                cmd.append('wsc -c "if set ' + ethN + ' inet_method static inet_address ' + ip_addr + " inet_netmask " + mask + '"')
+                cmd.append('wsc -c "if set ' + ethN + ' inet_method static inet_address ' + ip_addr + " inet_netmask " + mask + " inet_gateway none" + '"')
                 if (role == "WAN" or role == "CLUSTER" or role == "LAN"):
                     cmd.append('wsc -c "if set ' + ethN + ' role ' + role + '"')
                 # если есть gw для LAN (для CLUSTER маршрут не добавляем, это должна быть изолировання подсеть)
@@ -833,6 +833,9 @@ def generate_commands_playbook(output_file="playbook.yaml", *functions):
     :param output_file: Имя выходного файла для плейбука (по умолчанию "playbook.yaml").
     :param functions: Функции, возвращающие списки команд.
     """
+    playbook_path = 'playbook.yaml'
+    with open(playbook_path, 'r', encoding='utf-8') as f:
+        playbook = yaml.safe_load(f) or []
     # Список для всех команд
     all_commands = []
     # Вызываем каждую функцию и добавляем её команды в общий список
@@ -854,14 +857,17 @@ def generate_commands_playbook(output_file="playbook.yaml", *functions):
          "shell": command}
         for command in all_commands
     ]
+    directives.append({"name": "Commit configuration changes force",
+         "shell": 'wsc -c "config commit force" 2>/dev/null || true'})
     directives.append({"name": "Commit configuration changes",
          "shell": 'wsc -c "config commit"'})
     # Формируем структуру плейбука
-    playbook = [{
+    structure = {
         "name": "Execute commands on nodes",
         "hosts": "all",
         "tasks": directives
-    }]
+    }
+    playbook.append(structure)
 
     # Сохраняем плейбук в YAML-файл
     with open(output_file, "w", encoding="utf-8") as f:
@@ -914,6 +920,33 @@ def generate_commands_playbook_check(af_nodes):
         yaml.dump(playbook, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
 
         print(t("checks_added") + af_nodes[0].hostname)    
+
+def rmwsc():
+    playbook_path = 'playbook.yaml'
+    
+    playbook = []
+
+    directives = [
+    {
+        "name": "Remove wsc'",
+        "shell": 'rm /opt/ptaf/conf/wsc/config.sqlite3 2>/dev/null || true',
+        "tags":"rmwsc"
+    }
+    ]
+
+    # Формируем структуру нового плейбука
+    playb = {
+        "name": f"Clean wsc sql from all nodes",
+        "hosts": "all",
+        "tasks": directives
+    }
+    playbook.append(playb)
+
+    # Сохраняем плейбук в YAML-файл
+    with open(playbook_path, "w", encoding="utf-8") as f:
+        yaml.dump(playbook, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+
+
 def main():
     # читаем параметры
     parser = argparse.ArgumentParser(prog="conf.py", prefix_chars="-", description="Конфигуратор конфигов для AF4", usage="conf.py -e ""AF4_conf.xlsx"" -s ""Sheet1""")
@@ -966,7 +999,9 @@ def main():
 
     # print(af_nodes[3].__dict__)
 
+    
     generate_inventory(af_nodes)
+    rmwsc()
     generate_commands_playbook("playbook.yaml",
                            lambda: vip(df),
                            lambda: ntp(df),
@@ -993,7 +1028,12 @@ def main():
     2. Файлики inventory.yaml и playbook.yaml положить на первую базовую ноду
     3. Активировать виртуальную среду: source /opt/ptaf/pywsc/bin/activate 
     4. Проверить, что все узлы доступны по кластерным интерфейсам: ansible all -i ./inventory.yaml -m ping
-    5. Запустить ансибл: ansible-playbook -i inventory.yaml playbook.yaml
+    5. Запустить ансибл:
+     Если у вас настроены бонды или вы хотите сохранить настройки wsc запустите:
+        ansible-playbook -i inventory.yaml playbook.yaml --skip-tags rmwsc
+
+     Стандартный запуск:
+        ansible-playbook -i inventory.yaml playbook.yaml
     6. Если ансибл упал на этапе config commit, то можно попробовать ещё раз: ansible-playbook -i inventory.yaml playbook.yaml --start-at-task "Commit configuration changes"
     7. Деактивируем виртуальную среду: deactivate
     8. Profit!
@@ -1020,6 +1060,10 @@ For automated installation:
     4. Verify that all nodes are reachable via cluster interfaces:
        ansible all -i ./inventory.yaml -m ping
     5. Run Ansible:
+       If you have bonds or you need to keep your wsc settings run 
+       ansible-playbook -i inventory.yaml playbook.yaml --skip-tags rmwsc
+
+       Default run: 
        ansible-playbook -i inventory.yaml playbook.yaml
     6. If Ansible fails at the config commit stage, you can retry:
        ansible-playbook -i inventory.yaml playbook.yaml --start-at-task "Commit configuration changes"
