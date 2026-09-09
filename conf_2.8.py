@@ -721,18 +721,18 @@ def eth(ip_addr,mask,gw,role,ethN,mode,gwint):
                 if (role == "WAN" or role == "CLUSTER" or role == "LAN"):
                     cmd.append('wsc -c "if set ' + ethN + ' role ' + role + '"')
                 # если есть gw для LAN (для CLUSTER маршрут не добавляем, это должна быть изолировання подсеть)
-                if (gw != "" and role != "CLUSTER"):
-                    cmd.append('   # ' +t("add_gateway_table" + role))
-                    # номера таблиц должны отличаться, считаем, что у нас либо LAN, либо CLUSTER таблица
-                    table_num = "128"
-                    if (role == "LAN"):
-                        table_num = "129"
-                    cmd.append('wsc -c "route table add ' + ethN + ' ' + table_num + '"')
-                    cmd.append('wsc -c "route add default via ' + gw + ' dev '+ ethN + ' table ' + ethN + '"')
-                    cmd.append('wsc -c "route rule add '+ ethN + ' from ' + ip_addr + '/32 table ' + ethN  + '"')
-                    cmd.append('wsc -c "route rule add '+ ethN + ' to ' + ip_addr + '/32 table ' + ethN  + '"')
-                    addr = ipcalc.IP(ip=str(ip_addr), mask=str(mask))
-                    cmd.append('wsc -c "route add ' + str(addr.guess_network()) + ' dev '+ ethN + ' src ' + ip_addr + ' table ' + ethN  + '"')
+                # if (gw != "" and role != "CLUSTER"):
+                #     cmd.append('   # ' +t("add_gateway_table" + role))
+                #     # номера таблиц должны отличаться, считаем, что у нас либо LAN, либо CLUSTER таблица
+                #     table_num = "128"
+                #     if (role == "LAN"):
+                #         table_num = "129"
+                #     cmd.append('wsc -c "route table add ' + ethN + ' ' + table_num + '"')
+                #     cmd.append('wsc -c "route add default via ' + gw + ' dev '+ ethN + ' table ' + ethN + '"')
+                #     cmd.append('wsc -c "route rule add '+ ethN + ' from ' + ip_addr + '/32 table ' + ethN  + '"')
+                #     cmd.append('wsc -c "route rule add '+ ethN + ' to ' + ip_addr + '/32 table ' + ethN  + '"')
+                #     addr = ipcalc.IP(ip=str(ip_addr), mask=str(mask))
+                #     cmd.append('wsc -c "route add ' + str(addr.guess_network()) + ' dev '+ ethN + ' src ' + ip_addr + ' table ' + ethN  + '"')
         else:
             print("Error: dhcp mode, but IP exists")
             exit(1)
