@@ -34,9 +34,11 @@
     ```deactivate```
     8. Profit!
 5. Дальше запустить инфру, мониторинг и деплой:
-    /var/pt/infra/current/install.sh
-    /var/pt/infra/current/install.sh --action=add_monitoring
-    /var/pt/ptaf-deploy/current/install.sh
+   ```bash
+   /var/pt/infra/current/install.sh
+   /var/pt/infra/current/install.sh --action=add_monitoring
+   /var/pt/ptaf-deploy/current/install.sh
+   ```
 
 Если установка завершилась без ошибок, то будет failed = 0
 
