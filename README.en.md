@@ -2,7 +2,7 @@
 - [Русский](README.md)
 
 
-## Script for Automated Installation of an AF Cluster
+## Script for Automated Installation of an PT AF Cluster
 
 The script allows you to deploy a PTAF PRO cluster automatically from a large number of nodes without manually configuring everything in wsc.
 
